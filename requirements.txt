@@ -1,8 +1,6 @@
 streamlit
-torch==2.0.1
-torchvision==0.15.2
-transformers==4.33.2
-pillow
 numpy
-opencv-python-headless==4.8.1.78
+pillow
+torch
+transformers
 scikit-learn
