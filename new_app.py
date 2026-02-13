@@ -6,7 +6,7 @@ Creative UI Version with Speedometer Confidence Gauge
 
 import os
 import cv2
-import pickle
+import joblib   # ✅ use joblib instead of pickle
 import numpy as np
 import streamlit as st
 import torch
@@ -22,8 +22,7 @@ MODEL_PATH = os.path.join(BASE_DIR, "vit_model.pkl")
 # ---------------------------
 # Load trained SVM classifier
 # ---------------------------
-with open(MODEL_PATH, "rb") as f:
-    classifier = pickle.load(f)
+classifier = joblib.load(MODEL_PATH)
 
 # ---------------------------
 # Load ViT (feature extractor)
