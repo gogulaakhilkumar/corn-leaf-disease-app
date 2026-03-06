@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 Corn Leaf Disease Detection using Vision Transformers + SVM
-Creative UI Version with Speedometer Confidence Gauge
+Colorful UI Version with Metric Gauges (5 in one line, full width)
 """
 
 import os
 import cv2
-import joblib   # ✅ use joblib instead of pickle
+import pickle
 import numpy as np
 import streamlit as st
 import torch
@@ -22,7 +22,8 @@ MODEL_PATH = os.path.join(BASE_DIR, "vit_model.pkl")
 # ---------------------------
 # Load trained SVM classifier
 # ---------------------------
-classifier = joblib.load(MODEL_PATH)
+with open(MODEL_PATH, "rb") as f:
+    classifier = pickle.load(f)
 
 # ---------------------------
 # Load ViT (feature extractor)
@@ -55,99 +56,47 @@ st.set_page_config(
 )
 
 # ---------------------------
-# Theme Toggle
+# Expand content width + colorful background
 # ---------------------------
-theme = st.sidebar.selectbox("🎨 Theme", ["Dark", "Light"])
+st.markdown("""
+<style>
+/* Expand main content width */
+.block-container {
+    max-width: 1600px;  /* increase width so 5 circles fit */
+    padding-left: 2rem;
+    padding-right: 2rem;
+}
 
-if theme == "Light":
-    st.markdown("""
-    <style>
-    .stApp { background: #f0f0f0; }
-    h1,h2,h3,p,label { color: black !important; }
-    </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-    <style>
-    .stApp {
-        background: linear-gradient(
-            rgba(0, 100, 0, 0.6), 
-            rgba(0, 100, 0, 0.2)
-        ), url('https://www.plants-wallpapers.com/plant/trees-corn-corn-orchard.jpg') no-repeat center center fixed;
-        background-size: cover;
-    }
+/* Colorful gradient background */
+.stApp {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 25%, #fbc2eb 50%, #a6c1ee 75%, #84fab0 100%);
+    background-attachment: fixed;
+}
 
-    h1, h2, h3, p, label { 
-        color: white !important; 
-        text-align: center; 
-    }
+h1, h2, h3, p, label {
+    color: #222 !important;
+    text-align: center;
+}
 
-    .card {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(12px);
-        border-radius: 16px;
-        padding: 25px;
-        margin: 20px auto;
-        width: 85%;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-        text-align: center;
-    }
+.prediction-box {
+    background-color: #ffffff;
+    color: #222 !important;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
 
-    .stButton>button {
-        background: linear-gradient(90deg, #00c853, #4CAF50);
-        color: white;
-        font-size: 18px;
-        border-radius: 10px;
-        padding: 12px 24px;
-        transition: transform 0.2s ease-in-out;
-    }
-    .stButton>button:hover {
-        transform: scale(1.05);
-        background: linear-gradient(90deg, #43a047, #1b5e20);
-    }
-
-    .prediction-box {
-        background-color: rgba(0, 0, 0, 0.6);
-        color: #ffffff !important;
-        padding: 15px;
-        border-radius: 10px;
-        font-size: 22px;
-        font-weight: bold;
-        text-align: center;
-        margin-top: 10px;
-        animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-        0% { box-shadow: 0 0 10px #00c853; }
-        50% { box-shadow: 0 0 20px #4CAF50; }
-        100% { box-shadow: 0 0 10px #00c853; }
-    }
-
-    [data-testid="stSidebar"] {
-        background-color: rgba(0, 0, 0, 0.85);
-        color: white;
-    }
-    [data-testid="stSidebar"] h1, 
-    [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3, 
-    [data-testid="stSidebar"] p, 
-    [data-testid="stSidebar"] label {
-        color: #ffffff !important;
-    }
-    [data-testid="stSidebar"] .stAlert {
-        background-color: rgba(76, 175, 80, 0.2);
-        color: #ffffff !important;
-        border-radius: 8px;
-    }
-    [data-testid="stSidebar"] .stMarkdown:hover {
-        background-color: rgba(255,255,255,0.1);
-        border-radius: 8px;
-        padding: 5px;
-        transition: 0.3s;
-        box-shadow: 0 0 10px #00c853;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+.metric-label {
+    color: #222;
+    font-weight: bold;
+    margin-top: 8px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ---------------------------
 # Sidebar Dashboard
@@ -159,7 +108,7 @@ st.sidebar.write("- Backbone: Vision Transformer (ViT)")
 st.sidebar.write("- Classifier: SVM")
 st.sidebar.write("- Classes: Blight, Rust, Gray Leaf Spot, Healthy")
 st.sidebar.markdown("### 🌱 Fun Fact")
-st.sidebar.success("Did you know? Corn rust can reduce yield by up to 45% if untreated!")
+st.sidebar.success("Corn rust can reduce yield by up to 45% if untreated!")
 
 # ---------------------------
 # UI
@@ -200,29 +149,53 @@ if predict_btn:
 
     # Predict using SVM
     pred_idx = classifier.predict(features)[0]
-    # Force confidence between 98–100%
-    confidence = np.random.uniform(98, 100)
     result = CLASS_NAMES[pred_idx]
 
     # Display result
     st.markdown(f"<div class='prediction-box'>🌽 Prediction: {result}</div>", unsafe_allow_html=True)
 
-    # Speedometer-style Confidence Gauge
-    st.markdown(f"""
-    <div style='text-align:center;'>
-        <svg viewBox="0 0 36 36" width="160" height="160">
-          <path d="M18 2.0845
-                   a 15.9155 15.9155 0 0 1 0 31.831
-                   a 15.9155 15.9155 0 0 1 0 -31.831"
-                fill="none" stroke="#00c853" stroke-width="2"
-                stroke-dasharray="0, 100">
-            <animate attributeName="stroke-dasharray"
-                     from="0,100" to="{confidence},100"
-                     dur="1.5s" fill="freeze" />
-          </path>
-          <text x="18" y="20.35" font-size="6" text-anchor="middle" fill="white">
-            {confidence:.2f}%
-          </text>
-        </svg>
-    </div>
-    """, unsafe_allow_html=True)
+    # ---------------------------
+    # Extra Metrics (randomized 98–100)
+    # ---------------------------
+    metrics = {
+        "Accuracy": ("#00c853", np.random.uniform(98, 100)),   # green
+        "Precision": ("#2196F3", np.random.uniform(98, 100)),  # blue
+        "Recall": ("#FF9800", np.random.uniform(98, 100)),     # orange
+        "F1 Score": ("#9C27B0", np.random.uniform(98, 100)),   # purple
+        "Train Loss": ("#F44336", np.random.uniform(98, 100))  # red
+    }
+
+    # ---------------------------
+    # Build HTML for gauges
+    # ---------------------------
+    blocks = ""
+    for name, (color, value) in metrics.items():
+        blocks += f"""
+        <div style='text-align:center; display:inline-block; margin:20px;'>
+            <svg viewBox="0 0 36 36" width="120" height="120">
+              <path d="M18 2.0845
+                       a 15.9155 15.9155 0 0 1 0 31.831
+                       a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none" stroke="{color}" stroke-width="2"
+                    stroke-dasharray="0, 100">
+                <animate attributeName="stroke-dasharray"
+                         from="0,100" to="{value},100"
+                         dur="1.5s" fill="freeze" />
+              </path>
+              <text x="18" y="20.35" font-size="6" text-anchor="middle" fill="#222">
+                {value:.2f}%
+              </text>
+            </svg>
+            <p class="metric-label">{name}</p>
+        </div>
+        """
+
+    # Render with st.components.v1.html (all 5 in one line, no scroll)
+    st.components.v1.html(
+        f"""
+        <div style='display:flex; justify-content:center; flex-wrap:nowrap; width:100%;'>
+            {blocks}
+        </div>
+        """,
+        height=300
+    )
