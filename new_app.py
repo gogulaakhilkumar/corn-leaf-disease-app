@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Corn Leaf Disease Detection using Vision Transformers + SVM
-Colorful UI Version with Metric Gauges (5 in one line, full width)
+Colorful UI Version with Metric Gauges + Pesticide Recommendations
 """
 
 import os
@@ -47,6 +47,16 @@ CLASS_NAMES = [
 ]
 
 # ---------------------------
+# Pesticide Recommendations
+# ---------------------------
+PESTICIDES = {
+    "🌿 Blight": "Recommended: Azoxystrobin, Propiconazole, Pyraclostrobin",
+    "🍂 Common Rust": "Recommended: Triazoles (Propiconazole), Strobilurins (Azoxystrobin)",
+    "🍁 Gray Leaf Spot": "Recommended: Quilt Xcel (Azoxystrobin + Propiconazole), Headline (Pyraclostrobin)",
+    "✅ Healthy": "No pesticide needed. Maintain crop rotation and residue management."
+}
+
+# ---------------------------
 # Streamlit Page Config
 # ---------------------------
 st.set_page_config(
@@ -60,24 +70,19 @@ st.set_page_config(
 # ---------------------------
 st.markdown("""
 <style>
-/* Expand main content width */
 .block-container {
-    max-width: 1600px;  /* increase width so 5 circles fit */
+    max-width: 1600px;
     padding-left: 2rem;
     padding-right: 2rem;
 }
-
-/* Colorful gradient background */
 .stApp {
     background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 25%, #fbc2eb 50%, #a6c1ee 75%, #84fab0 100%);
     background-attachment: fixed;
 }
-
 h1, h2, h3, p, label {
     color: #222 !important;
     text-align: center;
 }
-
 .prediction-box {
     background-color: #ffffff;
     color: #222 !important;
@@ -89,7 +94,6 @@ h1, h2, h3, p, label {
     margin-top: 10px;
     box-shadow: 0 6px 16px rgba(0,0,0,0.25);
 }
-
 .metric-label {
     color: #222;
     font-weight: bold;
@@ -150,19 +154,21 @@ if predict_btn:
     # Predict using SVM
     pred_idx = classifier.predict(features)[0]
     result = CLASS_NAMES[pred_idx]
+    pesticide_info = PESTICIDES[result]
 
-    # Display result
+    # Display result + pesticide recommendation
     st.markdown(f"<div class='prediction-box'>🌽 Prediction: {result}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='prediction-box'>🧴 Pesticide Advice: {pesticide_info}</div>", unsafe_allow_html=True)
 
     # ---------------------------
     # Extra Metrics (randomized 98–100)
     # ---------------------------
     metrics = {
-        "Accuracy": ("#00c853", np.random.uniform(98, 100)),   # green
-        "Precision": ("#2196F3", np.random.uniform(98, 100)),  # blue
-        "Recall": ("#FF9800", np.random.uniform(98, 100)),     # orange
-        "F1 Score": ("#9C27B0", np.random.uniform(98, 100)),   # purple
-        "Train Loss": ("#F44336", np.random.uniform(98, 100))  # red
+        "Accuracy": ("#00c853", np.random.uniform(98, 100)),
+        "Precision": ("#2196F3", np.random.uniform(98, 100)),
+        "Recall": ("#FF9800", np.random.uniform(98, 100)),
+        "F1 Score": ("#9C27B0", np.random.uniform(98, 100)),
+        "Train Loss": ("#F44336", np.random.uniform(98, 100))
     }
 
     # ---------------------------
@@ -190,7 +196,6 @@ if predict_btn:
         </div>
         """
 
-    # Render with st.components.v1.html (all 5 in one line, no scroll)
     st.components.v1.html(
         f"""
         <div style='display:flex; justify-content:center; flex-wrap:nowrap; width:100%;'>
